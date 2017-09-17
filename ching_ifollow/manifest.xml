@@ -1,0 +1,131 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns="http://www.we7.cc" versionCode="0.6,0.7,0.8 1.0">
+	<application setting="true">
+		<name><![CDATA[场景二维码]]></name>
+		<identifie><![CDATA[ching_ifollow]]></identifie>
+		<version><![CDATA[0.1]]></version>
+		<type><![CDATA[services]]></type>
+		<ability><![CDATA[强悍的粉丝渠道来源分析工具]]></ability>
+		<description><![CDATA[强悍的粉丝渠道来源分析工具； 粉丝扫码模块后台创建的各个场景二维码进行统计粉丝二维码来源，关注数、取消关注数等。本模块可以分析出各个渠道引流关注的人数和取消关注的人数及详细的人数列表。功能简单粗暴，二维码可定制嵌入官方logo。]]></description>
+		<author><![CDATA[芝麻创意]]></author>
+		<url><![CDATA[https://www.we7.cc]]></url>
+	</application>
+	<platform>
+		<subscribes>
+			<message type="qr" />
+			<message type="subscribe" />
+			<message type="unsubscribe" />
+		</subscribes>
+		<handles>
+			<message type="text" />
+			<message type="qr" />
+			<message type="subscribe" />
+			<message type="unsubscribe" />
+		</handles>
+		<rule embed="true" />
+		<card embed="false" />
+	</platform>
+	<bindings>
+		<menu>
+			<entry title="二维码管理" do="qrcode" state="" direct="false" />
+			<entry title="粉丝管理" do="qrcode_fans" state="" direct="false" />
+			<entry title="粉丝分组" do="qrcode_fans_group" state="" direct="false" />
+			<entry title="数据统计" do="qrcode_stat" state="" direct="false" />
+		</menu>
+	</bindings>
+	<permissions>
+	</permissions>
+	<install><![CDATA[
+DROP TABLE IF EXISTS `ims_ching_ifollow`;
+CREATE TABLE `ims_ching_ifollow` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `uniacid` int(11) DEFAULT NULL COMMENT '公众号 id',
+  `rid` int(11) DEFAULT NULL COMMENT '规则id',
+  `name` varchar(40) DEFAULT NULL COMMENT '规则名称',
+  `title` varchar(40) DEFAULT NULL COMMENT '场景名称',
+  `keyword` varchar(80) DEFAULT NULL COMMENT '关键字',
+  `group_id` int(11) DEFAULT NULL COMMENT '分组 id',
+  `wx_url` varchar(300) DEFAULT NULL COMMENT '微信二维码路径',
+  `ticket` varchar(150) DEFAULT NULL COMMENT '二维码生成的唯一凭证',
+  `subnum` int(11) DEFAULT '0' COMMENT '关注数',
+  `scannum` int(11) DEFAULT '0' COMMENT '扫码数',
+  `cancelnum` int(11) DEFAULT '0' COMMENT '取消关注数',
+  `deleted` smallint(2) DEFAULT '0' COMMENT '是否删除 1 是 0 否 默认0',
+  `model` smallint(2) DEFAULT '2' COMMENT '二维码类型 1 临时 2 永久',
+  `expire` int(11) DEFAULT '0' COMMENT '过期时间 0 不过期',
+  `wx_data` text COMMENT '微信数据，备份',
+  `path` varchar(150) DEFAULT '0' COMMENT '写入的图片资源',
+  `create_time` int(11) DEFAULT NULL COMMENT '创建时间',
+  `mid` varchar(40) DEFAULT NULL COMMENT '微信资源的media',
+  `m_data` varchar(1024) DEFAULT NULL COMMENT '微信资源',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='二维码表';
+
+DROP TABLE IF EXISTS `ims_ching_ifollow_fans`;
+CREATE TABLE `ims_ching_ifollow_fans` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `uniacid` int(11) DEFAULT NULL COMMENT '公众号 id',
+  `openid` varchar(40) DEFAULT NULL,
+  `sex` smallint(2) DEFAULT NULL COMMENT '性别 1 男 2 女 3未知',
+  `nickname` varchar(150) DEFAULT NULL COMMENT '昵称 urlencode',
+  `city` varchar(40) DEFAULT NULL COMMENT '所在城市',
+  `province` varchar(40) DEFAULT NULL COMMENT '省',
+  `country` varchar(40) DEFAULT NULL COMMENT '国家',
+  `headimgurl` varchar(300) DEFAULT NULL COMMENT '头像',
+  `group_id` int(11) DEFAULT NULL COMMENT '所在分组',
+  `qrcode_id` int(11) DEFAULT NULL COMMENT '场景二维码id',
+  `subscribe_time` int(11) DEFAULT NULL COMMENT '关注时间',
+  `cancel_sub_time` int(11) DEFAULT NULL COMMENT '取消关注时间',
+  `create_time` int(11) DEFAULT NULL COMMENT '创建时间',
+  `wx_data` text COMMENT '创建时间',
+  `follow` smallint(2) DEFAULT NULL COMMENT '是否关注 1 是 2 否',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=52 DEFAULT CHARSET=utf8 COMMENT='用户信息表';
+
+DROP TABLE IF EXISTS `ims_ching_ifollow_fans_group`;
+CREATE TABLE `ims_ching_ifollow_fans_group` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `uniacid` int(11) DEFAULT NULL COMMENT '公众号 id',
+  `name` varchar(40) DEFAULT NULL COMMENT '分组名称',
+  `group_desc` varchar(150) DEFAULT NULL COMMENT '分组描述',
+  `mc_group_id` int(11) DEFAULT NULL COMMENT '分组id',
+  `count` int(11) DEFAULT '0' COMMENT '分组内用户总数量',
+  `scan_count` int(11) DEFAULT '0' COMMENT '场景内分组总数量',
+  `cancel_count` int(11) DEFAULT '0' COMMENT '取消关注数',
+  `create_time` int(11) DEFAULT NULL COMMENT '创建时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8 COMMENT='分组表';
+
+DROP TABLE IF EXISTS `ims_ching_ifollow_record`;
+CREATE TABLE `ims_ching_ifollow_record` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `nickname` varchar(150) DEFAULT NULL COMMENT '昵称',
+  `uniacid` int(11) DEFAULT NULL,
+  `avartar` varchar(300) DEFAULT NULL COMMENT '头像',
+  `qrcode_id` int(11) DEFAULT NULL COMMENT '二维码id',
+  `ticket` varchar(300) DEFAULT NULL,
+  `type` varchar(20) DEFAULT NULL COMMENT '类型 qr 扫描 subscribe 关注 unsubscribe 取消关注',
+  `wx_data` varchar(1024) DEFAULT NULL,
+  `create_time` int(11) DEFAULT NULL,
+  `update_time` int(11) DEFAULT NULL,
+  `date` int(8) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='扫码记录日志';
+
+DROP TABLE IF EXISTS `ims_ching_ifollow_stat`;
+CREATE TABLE `ims_ching_ifollow_stat` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `uniacid` int(11) DEFAULT NULL COMMENT '公众号 id',
+  `qrcode_id` int(11) DEFAULT NULL COMMENT '场景二维码id',
+  `group_id` int(11) DEFAULT NULL COMMENT '分组id',
+  `date` int(8) DEFAULT NULL COMMENT '时间Ymd',
+  `scan_count` int(11) DEFAULT '0' COMMENT '扫码数',
+  `sub_num` int(11) DEFAULT '0' COMMENT '关注数',
+  `cancel_num` int(11) DEFAULT '0' COMMENT '取消关注数',
+  `create_time` int(11) DEFAULT NULL COMMENT '创建时间',
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='统计表';
+]]></install>
+	<uninstall><![CDATA[uninstall.php]]></uninstall>
+	<upgrade><![CDATA[upgrade.php]]></upgrade>
+</manifest>
